@@ -1,0 +1,55 @@
+import keras
+from keras.layers.convolutional import Convolution2D
+from keras.layers.core import Flatten
+from keras.layers.core import Dense
+from keras.layers.core import Dropout
+from keras.layers.convolutional import Cropping2D
+from keras.layers.pooling import MaxPooling2D
+from keras.layers import Input
+from keras.models import Model
+from keras.regularizers import *
+
+
+def get_model():
+	aliases = {}
+	Input_6 = Input(shape=(3, 320, 240), name='Input_6')
+	Cropping2D_1 = Cropping2D(name='Cropping2D_1',cropping= ((50, 0), (50, 50)))(Input_6)
+	Convolution2D_5977 = Convolution2D(name='Convolution2D_5977',activation= 'relu' ,nb_col= 5,border_mode= 'same' ,nb_row= 5,nb_filter= 16)(Cropping2D_1)
+	Convolution2D_5978 = Convolution2D(name='Convolution2D_5978',nb_col= 5,border_mode= 'same' ,nb_filter= 24,activation= 'relu' ,subsample= (2, 2),nb_row= 5)(Convolution2D_5977)
+	Convolution2D_5985 = Convolution2D(name='Convolution2D_5985',activation= 'relu' ,nb_col= 5,nb_row= 5,nb_filter= 32)(Convolution2D_5978)
+	Convolution2D_5983 = Convolution2D(name='Convolution2D_5983',activation= 'relu' ,subsample= (2, 2),nb_col= 3,nb_row= 3,nb_filter= 64)(Convolution2D_5985)
+	Convolution2D_5984 = Convolution2D(name='Convolution2D_5984',activation= 'relu' ,nb_col= 3,nb_row= 3,nb_filter= 128)(Convolution2D_5983)
+	MaxPooling2D_1 = MaxPooling2D(name='MaxPooling2D_1',strides= (2,2))(Convolution2D_5984)
+	Convolution2D_6001 = Convolution2D(name='Convolution2D_6001',activation= 'relu' ,nb_col= 3,nb_row= 3,nb_filter= 128)(MaxPooling2D_1)
+	Flatten_5 = Flatten(name='Flatten_5')(Convolution2D_6001)
+	Dense_1415 = Dense(name='Dense_1415',activation= 'relu' ,output_dim= 1024)(Flatten_5)
+	Dropout_1080 = Dropout(name='Dropout_1080',p= 25)(Dense_1415)
+	Dense_1421 = Dense(name='Dense_1421',activation= 'relu' ,output_dim= 512)(Dropout_1080)
+	Dense_1422 = Dense(name='Dense_1422',activation= 'relu' ,output_dim= 256)(Dense_1421)
+	Dense_1423 = Dense(name='Dense_1423',activation= 'relu' ,output_dim= 128)(Dense_1422)
+	Dense_1424 = Dense(name='Dense_1424',activation= 'relu' ,output_dim= 64)(Dense_1423)
+	Dense_1416 = Dense(name='Dense_1416',activation= 'softmax' ,output_dim= 8)(Dense_1424)
+
+	model = Model([Input_6],[Dense_1416])
+	return aliases, model
+
+
+from keras.optimizers import *
+
+def get_optimizer():
+	return Adam()
+
+def is_custom_loss_function():
+	return False
+
+def get_loss_function():
+	return 'categorical_crossentropy'
+
+def get_batch_size():
+	return 64
+
+def get_num_epoch():
+	return 10
+
+def get_data_config():
+	return '{"shuffle": true, "mapping": {"Label": {"options": {}, "type": "Categorical", "port": "OutputPort0", "shape": ""}, "Filename": {"options": {"horizontal_flip": true, "Scaling": 1, "shear_range": 0, "width_shift_range": "10", "vertical_flip": true, "height_shift_range": "10", "Normalization": true, "Augmentation": true, "Height": "240", "pretrained": "None", "Width": "320", "rotation_range": "45", "Resize": true}, "type": "Image", "port": "InputPort0", "shape": ""}}, "datasetLoadOption": "batch", "numPorts": 1, "dataset": {"name": "Soda Bottles", "type": "private", "samples": 6615}, "samples": {"split": 4, "test": 661, "validation": 661, "training": 5292}, "kfold": 1}'
